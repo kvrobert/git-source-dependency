@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+    id "org.ajoberstar.grgit" version "3.1.1"
+}
+
+group 'com.robesz'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+// All Git repository List
+def repositoryMap =  [
+        "tas-hun-ner" : "ssh://git@gitlab.precognox.com:10324/tas-tagging/tas-hun-ner.git",
+]
+
+
+// Clone Repository Task
+task cloneRepositories {
+    doLast {
+        repositoryMap.each { name, url ->
+            println("--------------------       ----------------------------------------------------------------------")
+            def destination = file("ex-plugins/${name}")
+            try{
+                println("Cloning Project ${name}")
+                org.ajoberstar.grgit.Grgit.clone(dir: destination, uri: url)
+            }catch(Exception e){
+                println(e.getMessage())
+            }
+            println("------------------------------------------------------------------------------------------\n")
+        }
+    }
+}
+
+dependencies {
+
+    // if external source repositories directory is available then add those as dependency
+    File exRepositories = file('ex-plugins/')
+    if (exRepositories.exists()){
+        exRepositories.list().each {
+            implementation project(":${it}")
+        }
+    }
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
